@@ -56,7 +56,7 @@
 
 ## 📑 주요 프로시저
 
-### 1) 데이터 수집 _ 웹 크롤링 (한국교육과정평가원)
+### ▶️ 1. 데이터 수집 _ 웹 크롤링 (한국교육과정평가원)
 - 메인 페이지에서 각 연도, 학력분류, 차수, 과목별 코드번호 추출
 ```python
 code_dict = {}
@@ -100,7 +100,7 @@ for code in code_dict.keys():
         with open(file_path, 'wb') as file:
             file.write(response.content)  # PDF 파일 저장
 ```
-
+### ▶️ 2. 데이터 추출
 ### 2-1) 고등 영어 문제 추출
 
 - PDF에서 왼쪽/오른쪽 문항을 올바른 순서로 정리하여 추출
@@ -219,6 +219,49 @@ for file_name, question_content in questions_data.items():
         print(f"⚠ 정답이 없는 문제 파일: {file_name}")
 ```
 
+### ▶️ 3. 임베딩
+- OpenAI API를 사용해 질문을 벡터로 변환
+```
+# OpenAI 임베딩 함수 (최신 API 적용)
+def get_embedding(text):
+    response = openai.embeddings.create(
+        input=text,
+        model="text-embedding-ada-002"
+    )
+    return response.data[0].embedding  # 최신 API 방식 적용
+
+# 모든 질문을 임베딩 변환
+question_embeddings = [get_embedding(q) for q in questions]
+```
+
+- FAISS 데이터베이스 생성
+```
+embedding_dim = 1536  # 벡터 차원 설정
+index = faiss.IndexFlatL2(embedding_dim)  # FAISS 인덱스 생성
+question_vectors = np.array(question_embeddings).astype("float32")  # 임베딩 데이터를 numpy 배열로 변환
+index.add(question_vectors)  # FAISS 데이터베이스에 추가
+```
+
+- FAISS를 이용한 유사 질문 검색
+```
+def search_similar_questions(query, top_k=3):
+    # 입력 질문을 벡터로 변환
+    query_vector = np.array(get_embedding(query)).astype("float32").reshape(1, -1)
+
+    # 가장 가까운 질문 검색
+    distances, indices = index.search(query_vector, top_k)
+
+    # 결과 출력
+    print("\n[가장 유사한 질문들]")
+    for i in range(top_k):
+        idx = indices[0][i]
+        print(f"{i+1}. {questions[idx]} (거리: {distances[0][i]:.4f})")
+```
+
+- FAISS 인덱스 저장
+```
+faiss.write_index(index, "faiss_index.bin")
+```
 ---
 
 ## 🎬수행결과(테스트/시연 페이지)
