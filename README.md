@@ -220,7 +220,7 @@ for file_name, question_content in questions_data.items():
 ```
 
 ### ▶️ 3. 임베딩
-- OpenAI API를 사용해 질문을 벡터로 변환
+- OpenAI의 "text-embedding-ada-002" 모델를 사용해 질문을 벡터로 변환
 ```
 # OpenAI 임베딩 함수 (최신 API 적용)
 def get_embedding(text):
