@@ -49,6 +49,18 @@
 ---
 
 ## 🔧 기술 스택
+<p align="center">
+  <img src="https://img.shields.io/badge/github-181717?style=flat-square&logo=github&logoColor=white" width="150" height="45" />
+  <img src="https://img.shields.io/badge/git-F05032?style=flat-square&logo=git&logoColor=white" width="150" height="45" />
+  <img src="https://img.shields.io/badge/python-3776AB?style=flat-square&logo=python&logoColor=white" width="150" height="45" />
+  <img src="https://img.shields.io/badge/streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white" width="150" height="45" />
+</p>
+<br>
+<p align="center">
+  <img src="https://img.shields.io/badge/jupyter-F37626?style=flat-square&logo=jupyter&logoColor=white" width="150" height="45" />
+  <img src="https://img.shields.io/badge/openai-412991?style=flat-square&logo=openai&logoColor=white" width="150" height="45" />
+  <img src="https://img.shields.io/badge/discord-5865F2?style=flat-square&logo=discord&logoColor=white" width="150" height="45" />
+</p>
 
 
 
