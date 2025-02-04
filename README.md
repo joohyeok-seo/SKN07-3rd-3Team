@@ -42,14 +42,13 @@
 
 ## 📂 프로젝트 구조
 
-rag-chatbot/
-│── .gitignore               # Git 무시할 파일 설정
-│── README.md                # 프로젝트 설명서
-│── eng_streamlit.py         # Streamlit 실행 코드
-│── rag_application_fix.ipynb  # RAG 관련 Jupyter Notebook
-│── faiss_index.bin          # FAISS 벡터 데이터베이스
-│── faiss_data.pkl           # FAISS에서 사용할 문제 데이터
+│── README.md                # 프로젝트 설명서 <br>
+│── eng_streamlit.py         # Streamlit 실행 코드 <br>
+│── rag_application_fix.ipynb  # RAG 관련 Jupyter Notebook <br>
+│── faiss_index.bin          # FAISS 벡터 데이터베이스 <br>
+│── faiss_data.pkl           # FAISS에서 사용할 문제 데이터 <br>
 │── requirements.txt         # 필요한 Python 패키지 목록
+
 
 ## 🔧 기술 스택
 
