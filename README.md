@@ -472,7 +472,7 @@ PDF 변환 과정에서 밑줄 친 텍스트가 사라지는 문제를 확인하
 <br>  
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/d7652367-aaf7-440b-aeb3-96a4f7612bb3" width="500px" height="430px">
+  <img src="https://github.com/user-attachments/assets/d7652367-aaf7-440b-aeb3-96a4f7612bb3" width="600px" height="430px">
 </p>
 
 <br>  
@@ -498,7 +498,7 @@ PDF 변환 과정에서 밑줄 친 텍스트가 사라지는 문제를 확인하
 <br>  
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/5dd23d3c-7536-4851-89a5-96d6f1d1b92e" width="900px" height="550px">
+  <img src="https://github.com/user-attachments/assets/5dd23d3c-7536-4851-89a5-96d6f1d1b92e" width="600px" height="550px">
 </p>
 
 <br>  
