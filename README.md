@@ -100,6 +100,9 @@ for code in code_dict.keys():
         with open(file_path, 'wb') as file:
             file.write(response.content)  # PDF 파일 저장
 ```
+
+</br>
+
 ### ▶️ 2. 데이터 추출
 ### 2-1) 고등 영어 문제 추출
 
@@ -219,6 +222,8 @@ for file_name, question_content in questions_data.items():
         print(f"⚠ 정답이 없는 문제 파일: {file_name}")
 ```
 
+</br>
+
 ### ▶️ 3. 임베딩
 - OpenAI의 "text-embedding-ada-002" 모델를 사용해 질문을 벡터로 변환
 ```
@@ -261,6 +266,106 @@ def search_similar_questions(query, top_k=3):
 - FAISS 인덱스 저장
 ```
 faiss.write_index(index, "faiss_index.bin")
+```
+
+</br>
+
+### ▶️ 4. Streamlit 구현
+- RAG 관련 함수 로드
+```python
+def load_rag_functions():
+    with open(rag_application_path, "r", encoding="utf-8") as f:
+        nb_content = nbformat.read(f, as_version=4)
+    
+    exporter = PythonExporter()
+    source_code, _ = exporter.from_notebook_node(nb_content)
+    
+    exec(source_code, globals())
+
+load_rag_functions()
+```
+
+- FAISS 데이터베이스 및 질문 데이터 로드
+```python
+faiss_index_path = "faiss_index.bin"  # FAISS 인덱스 경로
+index = faiss.read_index(faiss_index_path)  # FAISS 인덱스 읽기
+
+faiss_data_path = "faiss_data.pkl"  # FAISS 데이터 경로
+try:
+    with open(faiss_data_path, "rb") as f:
+        faiss_data = pickle.load(f)  # 질문 데이터 로드
+except FileNotFoundError:
+    faiss_data = None  # 파일이 없으면 데이터는 None
+```
+
+- 랜덤 문제 가져오기 및 Streamlit UI 처리
+```python
+def get_random_question_from_faiss():
+    if faiss_data is not None and len(faiss_data) > 0:
+        retrieved_data = random.choice(faiss_data)  # 랜덤 문제 선택
+        if isinstance(retrieved_data, dict) and "question" in retrieved_data:
+            question = retrieved_data["question"]
+            options = retrieved_data.get("options", [])
+            correct_answer = retrieved_data.get("answer", "")
+            
+            # 밑줄 처리 적용
+            question = question.replace("effort", "<u>effort</u>")
+            return question, options, correct_answer
+    return None, None, None
+```
+
+- Streamlit UI 구성
+```python
+# **Streamlit UI**
+st.title("📘 RAG 기반 영어 학습 챗봇")  # 웹페이지 제목 설정
+
+query_type = st.radio("검색 유형 선택", ["일반 질문", "랜덤 문제 풀기"])  # 사용자로부터 입력받을 질문 유형 선택
+
+if query_type == "일반 질문":
+    query = st.text_input("질문을 입력하세요:")  # 일반 질문 입력받기
+    if st.button("응답 생성"):  # 응답 버튼 클릭 시
+        if query:
+            with st.spinner("AI가 답변을 생성 중입니다..."):
+                answer = generate_response(query)  # GPT 모델을 이용해 답변 생성
+            st.subheader("GPT-3.5의 답변")
+            st.markdown(answer, unsafe_allow_html=True)  # 응답 출력
+
+elif query_type == "랜덤 문제 풀기":
+    if "current_question" not in st.session_state:
+        st.session_state.current_question = None
+        st.session_state.current_options = []
+        st.session_state.correct_answer = None
+        st.session_state.answered = False
+
+    if st.button("랜덤 문제 출제"):  # 랜덤 문제 출제 버튼 클릭 시
+        result = get_random_question_from_faiss()
+        if result and all(result):  # 유효한 문제 데이터가 있으면
+            st.session_state.current_question, st.session_state.current_options, st.session_state.correct_answer = result
+            st.session_state.answered = False
+    
+    if st.session_state.current_question:
+        st.subheader("📖 랜덤 문제")
+        st.markdown(st.session_state.current_question, unsafe_allow_html=True)
+
+        selected_option = st.radio("정답을 선택하세요:", st.session_state.current_options, index=None)  # 선택지 표시
+
+        if st.button("정답 확인"):  # 정답 확인 버튼 클릭 시
+            if selected_option is None:
+                st.warning("⚠️ 정답을 선택해주세요!")
+            else:
+                st.session_state.answered = True
+                if selected_option == st.session_state.correct_answer:
+                    st.success("✅ 정답입니다!")
+                else:
+                    st.error(f"❌ 오답입니다! 정답은: {st.session_state.correct_answer}")
+
+        if st.session_state.answered:
+            if st.button("새로운 문제 출제"):  # 새로운 문제 출제 버튼 클릭 시
+                st.session_state.current_question = None
+                st.session_state.current_options = []
+                st.session_state.correct_answer = None
+                st.session_state.answered = False
+                st.rerun()  # 페이지 새로 고침
 ```
 ---
 
