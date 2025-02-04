@@ -226,7 +226,7 @@ for file_name, question_content in questions_data.items():
 
 ### ▶️ 3. 임베딩
 - OpenAI의 "text-embedding-ada-002" 모델를 사용해 질문을 벡터로 변환
-```
+```python
 # OpenAI 임베딩 함수 (최신 API 적용)
 def get_embedding(text):
     response = openai.embeddings.create(
@@ -240,7 +240,7 @@ question_embeddings = [get_embedding(q) for q in questions]
 ```
 
 - FAISS 데이터베이스 생성
-```
+```python
 embedding_dim = 1536  # 벡터 차원 설정
 index = faiss.IndexFlatL2(embedding_dim)  # FAISS 인덱스 생성
 question_vectors = np.array(question_embeddings).astype("float32")  # 임베딩 데이터를 numpy 배열로 변환
@@ -248,7 +248,7 @@ index.add(question_vectors)  # FAISS 데이터베이스에 추가
 ```
 
 - FAISS를 이용한 유사 질문 검색
-```
+```python
 def search_similar_questions(query, top_k=3):
     # 입력 질문을 벡터로 변환
     query_vector = np.array(get_embedding(query)).astype("float32").reshape(1, -1)
@@ -264,7 +264,7 @@ def search_similar_questions(query, top_k=3):
 ```
 
 - FAISS 인덱스 저장
-```
+```python
 faiss.write_index(index, "faiss_index.bin")
 ```
 
