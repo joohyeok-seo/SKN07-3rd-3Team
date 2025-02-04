@@ -269,7 +269,65 @@ faiss.write_index(index, "faiss_index.bin")
 
 </br>
 
-### ▶️ 4. Streamlit 구현
+### ▶️ 4. RAG로 성능 향상
+- OpenAI 임베딩
+```python
+client = openai.OpenAI()
+
+# 임베딩 변환 함수
+def get_embedding(text):
+    response = client.embeddings.create(
+        input=text,
+        model="text-embedding-ada-002"
+    )
+    return response.data[0].embedding  # 최신 API 방식 적용
+```
+- FAISS에서 유사한 질문 검색
+```python
+def search_similar_questions(query, top_k=3):
+    query_vector = np.array(get_embedding(query)).astype("float32").reshape(1, -1)
+    distances, indices = index.search(query_vector, top_k)
+
+    # 유사 질문 리스트 생성
+    similar_questions = [questions[idx] for idx in indices[0]]
+
+    print("\n[가장 유사한 질문들]")
+    for i, question in enumerate(similar_questions):
+        print(f"{i+1}. {question} (유사도 거리: {distances[0][i]:.4f})")
+
+    return similar_questions
+```
+- GPT-4와 연결하여 최종 RAG 응답 생성
+```python
+def generate_response(query):
+    similar_questions = search_similar_questions(query, top_k=3)     # 유사한 질문 찾기
+    context = "\n".join(similar_questions)     # 검색된 질문을 프롬프트 컨텍스트로 활용
+
+    # GPT-4 프롬프트 설정
+    prompt = f"""
+    You are an AI assistant. Use the following context to answer the question.
+
+    Context:
+    {context}
+
+    Question: {query}
+
+    Answer:
+    """
+
+    # GPT-4 API 호출 (최신 방식)
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[{"role": "system", "content": "You are a helpful assistant."},
+                  {"role": "user", "content": prompt}]
+    )
+
+    return response.choices[0].message.content
+```
+
+</br>
+
+### ▶️ 5. Streamlit 구현
 - RAG 관련 함수 로드
 ```python
 def load_rag_functions():
