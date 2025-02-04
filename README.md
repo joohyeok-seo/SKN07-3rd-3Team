@@ -432,7 +432,7 @@ elif query_type == "랜덤 문제 풀기":
 <br>  
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/c39017ae-5cb1-4718-b53b-9f78072266b6" width="550px" height="430px">
+  <img src="https://github.com/user-attachments/assets/c39017ae-5cb1-4718-b53b-9f78072266b6" width="600px" height="470px">
 </p>
 
 <br>  
