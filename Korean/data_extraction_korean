@@ -1,0 +1,110 @@
+```python
+import json
+import pdfplumber
+import pytesseract
+import os
+import re
+from pdf2image import convert_from_path
+from PIL import Image
+
+base_dir = os.path.abspath(os.path.join(os.getcwd(), "./pdf_files_korean"))  # "/home/encore/mini_project3/고졸"
+folder_path = os.path.join(base_dir, "문제") 
+output_json = "extracted_text.json"
+
+# 텍스트 정리 함수 (공백/개행 정리)
+def clean_text(text):
+    text = text.replace("\n", " ").strip()  # 개행을 공백으로 변경
+    text = re.sub(r"\s+", " ", text)  # 여러 개의 공백을 하나로
+    return text
+
+# PDF에서 왼쪽/오른쪽 문항을 올바른 순서로 정리하여 추출
+def extract_text_from_pdf(pdf_path):
+    with pdfplumber.open(pdf_path) as pdf:
+        combined_text_list = []
+
+        for page in pdf.pages:
+            width, height = page.width, page.height
+
+            # 왼쪽 문항 (페이지별 왼쪽 먼저)
+            left_bbox = (0, 0, width / 2, height)
+            left_crop = page.within_bbox(left_bbox)
+            left_text = left_crop.extract_text()
+            if left_text:
+                combined_text_list.append(clean_text(left_text))  # 정리 후 추가
+
+            # 오른쪽 문항 (페이지별 오른쪽 나중)
+            right_bbox = (width / 2, 0, width, height)
+            right_crop = page.within_bbox(right_bbox)
+            right_text = right_crop.extract_text()
+            if right_text:
+                combined_text_list.append(clean_text(right_text))
+
+    return "\n".join(combined_text_list)  # 왼쪽 → 오른쪽 순서 유지
+
+# OCR 이미지 PDF 처리 (페이지별 왼쪽 → 오른쪽)
+def extract_text_from_image_pdf(pdf_path):
+    images = convert_from_path(pdf_path, dpi=300)
+    combined_text_list = []
+
+    for img in images:
+        width, height = img.size
+
+        # 왼쪽 문항 OCR
+        left_crop = img.crop((0, 0, width // 2, height))
+        left_text = pytesseract.image_to_string(left_crop, lang="eng+kor", config="--psm 6")
+        combined_text_list.append(clean_text(left_text))
+
+        # 오른쪽 문항 OCR
+        right_crop = img.crop((width // 2, 0, width, height))
+        right_text = pytesseract.image_to_string(right_crop, lang="eng+kor", config="--psm 6")
+        combined_text_list.append(clean_text(right_text))
+
+    return "\n".join(combined_text_list)
+
+# OCR 후 텍스트 정리
+def fix_ocr_text(text):
+    return clean_text(text)
+
+# 파일명 정렬 (연도_회차로 정렬)
+def extract_numbers(filename):
+    match = re.match(r"(\d+)_(\d+)", filename)
+    if match:
+        return int(match.group(1)), int(match.group(2))  # 연도, 회차 변환
+    return (0, 0)
+
+# JSON 파일로 변환 및 저장
+def save_processed_text_to_json(folder_path, output_json):
+    all_data = {}
+    pdf_files = sorted(
+        [f for f in os.listdir(folder_path) if f.endswith(".pdf")],
+        key=extract_numbers
+    )
+
+    for file in pdf_files:
+        pdf_path = os.path.join(folder_path, file)
+        print(f"📄 Processing: {file}")
+
+        # 1️ PDF에서 직접 텍스트 추출
+        raw_text = extract_text_from_pdf(pdf_path)
+
+        # OCR 적용 
+        if not raw_text.strip():
+            raw_text = extract_text_from_image_pdf(pdf_path)
+
+        # 3️ OCR 정리
+        cleaned_text = fix_ocr_text(raw_text)
+
+        # 데이터 저장
+        all_data[file] = {
+            "raw_text": raw_text,
+            "cleaned_text": cleaned_text
+        }
+
+    # JSON 파일로 저장
+    with open(output_json, "w", encoding="utf-8") as f:
+        json.dump(all_data, f, ensure_ascii=False, indent=4)
+
+    print(f"모든 PDF 파일이 {output_json}에 저장되었습니다!")
+
+# 실행
+save_processed_text_to_json(folder_path, output_json)
