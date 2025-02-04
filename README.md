@@ -369,28 +369,84 @@ elif query_type == "랜덤 문제 풀기":
 
 ## 🎬수행결과(테스트/시연 페이지)
 
-1. 빈칸
-<img src="https://github.com/user-attachments/assets/c39017ae-5cb1-4718-b53b-9f78072266b6" width="450px" height="430px"> 
-PDF 변환 과정에서 빈칸을 포함한 지문이 누락되는 문제를 확인하였습니다.
+## **1. 빈칸 문제 해결**  
 
-JSON 변환 후 빈칸이 사라지는 현상을 해결하기 위해, _ (underscore) 기호를 Json에 직접 추가하여 문제 형식을 보완하였습니다.
-<img src="https://github.com/user-attachments/assets/2e2d1116-64e3-4e0e-9c3b-919bede8010a" width="500px" height="470px">
+<br>  
 
-3. 밑줄이 포함된 텍스트
-<img src="https://github.com/user-attachments/assets/7737df6d-8643-40fe-ba37-f571d3a8df99" width="450px" height="430px"> 
-PDF 변환 과정에서 밑줄 친 텍스트가 사라지는 문제를 확인하였습니다.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c39017ae-5cb1-4718-b53b-9f78072266b6" width="550px" height="430px">
+</p>
 
-<img src="https://github.com/user-attachments/assets/d7652367-aaf7-440b-aeb3-96a4f7612bb3" width="450px" height="430px"> 
-원본 PDF의 서식과 동일한 텍스트를 유지하도록 JSON 파일 내에서 밑줄이 포함된 텍스트 양쪽에 <u>해당텍스트</u>를 삽입하였습니다.
+<br>  
 
-4. 디버깅 출력
-<img src="https://github.com/user-attachments/assets/cb1fee0a-83da-452f-9209-5b8a3f9e01f9" width="450px" height="430px">
-의도치 않게 내부 디버깅 메시지가 챗봇의 응답에 포함되는 현상이 발생했습니다.
+PDF 변환 과정에서 빈칸을 포함한 지문이 누락되는 문제를 확인하였습니다.  
+이로 인해 챗봇이 정상적으로 빈칸 문제를 제공하지 못하는 오류가 발생하였습니다.  
 
-<img src="https://github.com/user-attachments/assets/5dd23d3c-7536-4851-89a5-96d6f1d1b92e" width="450px" height="430px">
+<br>  
 
-streamlit.py에서 로깅레벨을 조정하여 불필요한 DEBUG 및 INFO 메시지가 출력되지 않도록 변경하였습니다.
+이를 해결하기 위해, JSON 변환 후 사라진 빈칸을 `_ (underscore)` 기호를 사용하여 직접 추가함으로써 문제 형식을 보완하였습니다.  
 
+<br>  
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/2e2d1116-64e3-4e0e-9c3b-919bede8010a" width="600px" height="470px">
+</p>
+
+<br>  
+
+---
+
+## **2. 밑줄이 포함된 텍스트 문제 해결**  
+
+<br>  
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/7737df6d-8643-40fe-ba37-f571d3a8df99" width="600px" height="430px">
+</p>
+
+<br>  
+
+PDF 변환 과정에서 밑줄 친 텍스트가 사라지는 문제를 확인하였습니다.  
+이로 인해 선택지나 지문 내 중요한 부분이 유실되는 현상이 발생하였습니다.  
+
+<br>  
+
+이를 해결하기 위해, JSON 파일 내에서 밑줄이 포함된 텍스트 양쪽에 `<u>해당텍스트</u>`를 삽입하여 원본 PDF 서식을 유지하도록 조정하였습니다.  
+
+<br>  
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/d7652367-aaf7-440b-aeb3-96a4f7612bb3" width="600px" height="430px">
+</p>
+
+<br>  
+
+---
+
+## **3. 디버깅 메시지 출력 문제 해결**  
+
+<br>  
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/cb1fee0a-83da-452f-9209-5b8a3f9e01f9" width="600px" height="430px">
+</p>
+
+<br>  
+
+챗봇의 응답 과정에서 의도치 않게 내부 디버깅 메시지가 함께 출력되는 문제가 발생하였습니다.  
+이로 인해 사용자가 문제를 푸는 과정에서 불필요한 DEBUG 및 INFO 메시지가 노출되는 현상이 확인되었습니다.  
+
+<br>  
+
+이 문제를 해결하기 위해, `streamlit.py`에서 로깅 레벨을 조정하여 DEBUG 및 INFO 메시지가 출력되지 않도록 변경하였습니다.  
+
+<br>  
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5dd23d3c-7536-4851-89a5-96d6f1d1b92e" width="900px" height="550px">
+</p>
+
+<br>  
 
 ---
  
