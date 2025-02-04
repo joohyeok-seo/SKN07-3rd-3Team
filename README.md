@@ -55,6 +55,12 @@
 ---
 
 ## 📑 주요 프로시저
+
+### 1) 데이터 수집 _ 웹 크롤링 (한국교육과정평가원)
+- 메인 페이지에서 각 연도, 학력분류, 차수, 과목별 코드번호 추출
+```python
+code_dict = {}
+tmp = 1
 while True:   # 모든 페이지 정보 가져오기
     url = f'https://www.kice.re.kr/boardCnts/list.do?type=default&page={tmp}&selLimitYearYn=Y&selStartYear=2018&C06=&boardID=1500211&C05=&C04=&C03=&searchType=S&C02=&C01='
     re = requests.get(url)
@@ -71,7 +77,6 @@ while True:   # 모든 페이지 정보 가져오기
         edu = i.find_all('td')[2].text
         cnt = i.find_all('td')[3].text
         subject = i.find_all('td')[4].find('a')['title']
-
         # 원하는 자료 정보 선택
         if edu == '고졸학력' and subject == '영어':
             code_dict[code] = f'{year}_{edu}_{cnt}_{subject}'
@@ -79,18 +84,14 @@ while True:   # 모든 페이지 정보 가져오기
     tmp += 1
 ```
 ![image](https://github.com/user-attachments/assets/be19cd7c-60ca-4ed9-a431-04b07a2ace09)
-
-
 - 추출된 코드번호로 세부 페이지 접속 후 PDF 파일 저장
 ```python
 for code in code_dict.keys():
     down_url = f'https://www.kice.re.kr/boardCnts/view.do?boardID=1500211&boardSeq={code}&lev=0&m=030305&searchType=S&statusYN=W&page=1&s=kice'
     down_re = requests.get(down_url)
     down_soup = BeautifulSoup(down_re.text)
-
     tmp_url = down_soup.find(class_='fieldBox').find('a')['href']
     pdf_url = 'https://www.kice.re.kr' + tmp_url
-
     file_path = f'./data/정답/{code_dict[code]}.pdf'
     
     response = requests.get(pdf_url)
