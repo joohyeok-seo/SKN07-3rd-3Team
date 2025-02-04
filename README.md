@@ -101,7 +101,123 @@ for code in code_dict.keys():
             file.write(response.content)  # PDF 파일 저장
 ```
 
+### 2-1) 고등 영어 문제 추출
 
+- PDF에서 왼쪽/오른쪽 문항을 올바른 순서로 정리하여 추출
+```python
+def extract_text_from_pdf(pdf_path):
+    with pdfplumber.open(pdf_path) as pdf:
+        combined_text_list = []
+
+        for page in pdf.pages:
+            width, height = page.width, page.height
+
+            # 왼쪽 문항 (페이지별 왼쪽 먼저)
+            left_bbox = (0, 0, width / 2, height)
+            left_crop = page.within_bbox(left_bbox)
+            left_text = left_crop.extract_text()
+            if left_text:
+                combined_text_list.append(clean_text(left_text))  # 정리 후 추가
+
+            # 오른쪽 문항 (페이지별 오른쪽 나중)
+            right_bbox = (width / 2, 0, width, height)
+            right_crop = page.within_bbox(right_bbox)
+            right_text = right_crop.extract_text()
+            if right_text:
+                combined_text_list.append(clean_text(right_text))
+```
+
+- OCR 이미지 PDF 처리 (페이지별 왼쪽 → 오른쪽)
+```python
+def extract_text_from_image_pdf(pdf_path):
+    images = convert_from_path(pdf_path, dpi=300)
+    combined_text_list = []
+
+    for img in images:
+        width, height = img.size
+
+        # 왼쪽 문항 OCR
+        left_crop = img.crop((0, 0, width // 2, height))
+        left_text = pytesseract.image_to_string(left_crop, lang="eng+kor", config="--psm 6")
+        combined_text_list.append(clean_text(left_text))
+
+        # 오른쪽 문항 OCR
+        right_crop = img.crop((width // 2, 0, width, height))
+        right_text = pytesseract.image_to_string(right_crop, lang="eng+kor", config="--psm 6")
+        combined_text_list.append(clean_text(right_text))
+
+    return "\n".join(combined_text_list)
+```
+
+### 2-2) 고등 영어 정답 추출
+- PDF에서 영어 정답 추출 (OCR 포함)
+```python
+def extract_english_answers_from_pdf(pdf_path):
+    answers = {}
+
+    # 1️⃣ PDF에서 직접 텍스트 추출
+    with pdfplumber.open(pdf_path) as pdf:
+        text = "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
+
+    # 2️⃣ OCR 적용 (텍스트가 비어 있으면 OCR 사용)
+    if not text.strip():
+        text = extract_text_from_image_pdf(pdf_path)
+
+    # 3️⃣ OCR로 추출한 원본 텍스트 출력 (디버깅 목적)
+    print("\n📝 OCR EXTRACTED TEXT FROM PDF:", pdf_path)
+    print(text[:1000])  # 처음 1000자만 출력
+
+    # 4️⃣ "영어 정답표" 또는 "3교시 영어" 포함된 부분 찾기
+    match = re.search(r"(?:영어 정답표|3교시 영어|영어)([\s\S]+?)(?=\n\w+ 정답표|\Z)", text)
+    if match:
+        english_answers_section = match.group(1).strip()
+    else:
+        print(f"⚠ 영어 정답을 찾을 수 없음: {pdf_path}")
+        return None
+
+    # 5️⃣ 정답 패턴 추출 (디버깅용 출력 추가)
+    extracted_text = convert_korean_numbers(english_answers_section)
+    print("\n🔍 EXTRACTED ENGLISH ANSWERS SECTION:")
+    print(extracted_text[:500])  # 처음 500자만 출력
+
+    # 6️⃣ 문항번호 & 정답 추출
+    answer_pattern = re.findall(r"(\d+)\s+([①②③④1-4])", extracted_text)
+
+    # 🔥 디버깅: 추출된 정답 출력
+    print("\n🔎 Extracted Answers Dictionary:", answer_pattern)
+
+    for q_num, ans in answer_pattern:
+        answers[q_num] = ans
+
+    return answers
+```
+
+### 2-3) 고등 영어 문제, 정답 json파일 합치기
+- 파일명 정리 (정답 파일명과 문제 파일명 일치하도록 변환)
+```python
+def clean_filename(filename):
+    return filename.replace("_고등_정답.pdf", "_고등_영어.pdf")  # 정답 파일명을 문제 파일명과 맞춤
+```
+
+- 변환된 정답 데이터 키 값 수정
+```python
+answers_data_fixed = {clean_filename(k): v for k, v in answers_data.items()}\
+```
+
+- 문제와 정답 매칭
+```python
+merged_data = {}
+
+for file_name, question_content in questions_data.items():
+    matched_file = clean_filename(file_name)
+    if matched_file in answers_data_fixed:  # 정답이 있는 경우만 추가
+        merged_data[file_name] = {
+            "questions": question_content,
+            "answers": answers_data_fixed[matched_file]
+        }
+    else:
+        print(f"⚠ 정답이 없는 문제 파일: {file_name}")
+```
 
 ---
 
