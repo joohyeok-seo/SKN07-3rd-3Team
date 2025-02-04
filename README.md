@@ -227,7 +227,6 @@ for file_name, question_content in questions_data.items():
 ### ▶️ 3. 임베딩
 - OpenAI의 "text-embedding-ada-002" 모델를 사용해 질문을 벡터로 변환
 ```python
-# OpenAI 임베딩 함수 (최신 API 적용)
 def get_embedding(text):
     response = openai.embeddings.create(
         input=text,
@@ -316,7 +315,6 @@ def get_random_question_from_faiss():
 
 - Streamlit UI 구성
 ```python
-# **Streamlit UI**
 st.title("📘 RAG 기반 영어 학습 챗봇")  # 웹페이지 제목 설정
 
 query_type = st.radio("검색 유형 선택", ["일반 질문", "랜덤 문제 풀기"])  # 사용자로부터 입력받을 질문 유형 선택
