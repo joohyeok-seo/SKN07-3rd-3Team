@@ -1,0 +1,13 @@
+streamlit
+openai
+faiss-cpu
+numpy
+random
+pickle5
+nbformat
+nbconvert
+scikit-learn
+pandas
+torch
+transformers
+sentence-transformers
