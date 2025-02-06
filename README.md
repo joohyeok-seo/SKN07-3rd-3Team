@@ -356,90 +356,90 @@ load_rag_functions()
 
 - Load FAISS database and question data
 ```python
-faiss_index_path = "faiss_index.bin"  # FAISS 인덱스 경로
-index = faiss.read_index(faiss_index_path)  # FAISS 인덱스 읽기
+faiss_index_path = "faiss_index.bin"  # The FAISS index path
+index = faiss.read_index(faiss_index_path)  # Reading a FAISS index
 
-faiss_data_path = "faiss_data.pkl"  # FAISS 데이터 경로
+faiss_data_path = "faiss_data.pkl"  # FAISS data path
 try:
     with open(faiss_data_path, "rb") as f:
-        faiss_data = pickle.load(f)  # 질문 데이터 로드
+        faiss_data = pickle.load(f)  # Load question data
 except FileNotFoundError:
-    faiss_data = None  # 파일이 없으면 데이터는 None
+    faiss_data = None  # If the file is not found, the data will be None
 ```
 
-- 랜덤 문제 가져오기 및 Streamlit UI 처리
+- Fetching a random question and handling the Streamlit UI
 ```python
 def get_random_question_from_faiss():
     if faiss_data is not None and len(faiss_data) > 0:
-        retrieved_data = random.choice(faiss_data)  # 랜덤 문제 선택
+        retrieved_data = random.choice(faiss_data)  # Select a random question
         if isinstance(retrieved_data, dict) and "question" in retrieved_data:
             question = retrieved_data["question"]
             options = retrieved_data.get("options", [])
             correct_answer = retrieved_data.get("answer", "")
             
-            # 밑줄 처리 적용
+            # Apply underline formatting
             question = question.replace("effort", "<u>effort</u>")
             return question, options, correct_answer
     return None, None, None
 ```
 
-- Streamlit UI 구성
+- Streamlit UI layout
 ```python
-st.title("📘 RAG 기반 영어 학습 챗봇")  # 웹페이지 제목 설정
+st.title("📘 RAG-based English learning chatbot")  # Setting the webpage title
 
-query_type = st.radio("검색 유형 선택", ["일반 질문", "랜덤 문제 풀기"])  # 사용자로부터 입력받을 질문 유형 선택
+query_type = st.radio("Select search type", ["General Question", "Solve Random Problem"])  # Select question type from the user
 
-if query_type == "일반 질문":
-    query = st.text_input("질문을 입력하세요:")  # 일반 질문 입력받기
-    if st.button("응답 생성"):  # 응답 버튼 클릭 시
+if query_type == "General Question":
+    query = st.text_input("Please enter your question:")  # Receive general question input.
+    if st.button("Generate response"):  # When the response button is clicked
         if query:
-            with st.spinner("AI가 답변을 생성 중입니다..."):
-                answer = generate_response(query)  # GPT 모델을 이용해 답변 생성
-            st.subheader("GPT-3.5의 답변")
-            st.markdown(answer, unsafe_allow_html=True)  # 응답 출력
+            with st.spinner("The AI is generating a response..."):
+                answer = generate_response(query)  # Generate response using the GPT model
+            st.subheader("Response from GPT-3.5")
+            st.markdown(answer, unsafe_allow_html=True)  # Display response
 
-elif query_type == "랜덤 문제 풀기":
+elif query_type == "Solve a random problem":
     if "current_question" not in st.session_state:
         st.session_state.current_question = None
         st.session_state.current_options = []
         st.session_state.correct_answer = None
         st.session_state.answered = False
 
-    if st.button("랜덤 문제 출제"):  # 랜덤 문제 출제 버튼 클릭 시
+    if st.button("Generate random problem"):  # When the "Generate Random Problem" button is clicked
         result = get_random_question_from_faiss()
-        if result and all(result):  # 유효한 문제 데이터가 있으면
+        if result and all(result):  # If there is valid problem data
             st.session_state.current_question, st.session_state.current_options, st.session_state.correct_answer = result
             st.session_state.answered = False
     
     if st.session_state.current_question:
-        st.subheader("📖 랜덤 문제")
+        st.subheader("📖 Random problem")
         st.markdown(st.session_state.current_question, unsafe_allow_html=True)
 
-        selected_option = st.radio("정답을 선택하세요:", st.session_state.current_options, index=None)  # 선택지 표시
+        selected_option = st.radio("Please select the correct answer:", st.session_state.current_options, index=None)  # Display options
 
-        if st.button("정답 확인"):  # 정답 확인 버튼 클릭 시
+        if st.button("Check the answer"):  # When the "Check Answer" button is clicked
             if selected_option is None:
-                st.warning("⚠️ 정답을 선택해주세요!")
+                st.warning("⚠️ Please select the correct answer!")
             else:
                 st.session_state.answered = True
                 if selected_option == st.session_state.correct_answer:
-                    st.success("✅ 정답입니다!")
+                    st.success("✅ Correct answer!")
                 else:
-                    st.error(f"❌ 오답입니다! 정답은: {st.session_state.correct_answer}")
+                    st.error(f"❌ Incorrect answer! The correct answer is: {st.session_state.correct_answer}")
 
         if st.session_state.answered:
-            if st.button("새로운 문제 출제"):  # 새로운 문제 출제 버튼 클릭 시
+            if st.button("Generate a new problem"):  # When the "Generate New Problem" button is clicked
                 st.session_state.current_question = None
                 st.session_state.current_options = []
                 st.session_state.correct_answer = None
                 st.session_state.answered = False
-                st.rerun()  # 페이지 새로 고침
+                st.rerun()  # Refresh the page
 ```
 ---
 
-## 🎬수행결과(테스트/시연 페이지)
+## 🎬 Performance results (test/demonstration page)
 
-## **1. 빈칸 문제 해결**  
+## **1. Solve fill-in-the-blank question**  
 
 <br>  
 
@@ -449,11 +449,11 @@ elif query_type == "랜덤 문제 풀기":
 
 <br>  
 
-PDF 변환 과정에서 빈칸을 포함한 지문이 누락되는 문제를 확인하였습니다. 이로 인해 챗봇이 정상적으로 빈칸 문제를 제공하지 못하는 오류가 발생하였습니다.  
+I have identified an issue where the text containing blanks is missing during the PDF conversion process. This has caused the chatbot to fail in providing the fill-in-the-blank questions properly.
 
 <br>  
 
-이를 해결하기 위해, JSON 변환 후 사라진 빈칸을 `_ (underscore)` 기호를 사용하여 직접 추가함으로써 문제 형식을 보완하였습니다.  
+To resolve this, I manually added the missing blanks using the _ (underscore) symbol after converting to JSON, thereby restoring the question format.  
 
 <br>  
 
@@ -465,7 +465,7 @@ PDF 변환 과정에서 빈칸을 포함한 지문이 누락되는 문제를 확
 
 ---
 
-## **2. 밑줄이 포함된 텍스트 문제 해결**  
+## **2. Solve the issue with text containing underscores**  
 
 <br>  
 
@@ -475,11 +475,11 @@ PDF 변환 과정에서 빈칸을 포함한 지문이 누락되는 문제를 확
 
 <br>  
 
-PDF 변환 과정에서 밑줄 친 텍스트가 사라지는 문제를 확인하였습니다. 이로 인해 선택지나 지문 내 중요한 부분이 유실되는 현상이 발생하였습니다.  
+I have identified an issue where underlined text is missing during the PDF conversion process. This has resulted in the loss of important parts within the options or the passage.  
 
 <br>  
 
-이를 해결하기 위해, JSON 파일 내에서 밑줄이 포함된 텍스트 양쪽에 `<u>해당텍스트</u>`를 삽입하여 원본 PDF 서식을 유지하도록 조정하였습니다.  
+To resolve this, I adjusted the JSON file by inserting <u>text</u> around the underlined text to preserve the original PDF formatting.
 
 <br>  
 
@@ -491,7 +491,7 @@ PDF 변환 과정에서 밑줄 친 텍스트가 사라지는 문제를 확인하
 
 ---
 
-## **3. 디버깅 메시지 출력 문제 해결**  
+## **3. Solve the issue with debugging message output**  
 
 <br>  
 
@@ -501,11 +501,11 @@ PDF 변환 과정에서 밑줄 친 텍스트가 사라지는 문제를 확인하
 
 <br>  
 
-챗봇의 응답 과정에서 의도치 않게 내부 디버깅 메시지가 함께 출력되는 문제가 발생하였습니다. 이로 인해 사용자가 문제를 푸는 과정에서 불필요한 DEBUG 및 INFO 메시지가 노출되는 현상이 확인되었습니다.  
+An issue occurred where unintended internal debugging messages were being displayed during the chatbot's response process. As a result, unnecessary DEBUG and INFO messages were exposed to users during the problem-solving process.  
 
 <br>  
 
-이 문제를 해결하기 위해, `streamlit.py`에서 로깅 레벨을 조정하여 DEBUG 및 INFO 메시지가 출력되지 않도록 변경하였습니다.  
+To resolve this issue, I adjusted the logging level in streamlit.py to prevent DEBUG and INFO messages from being displayed.  
 
 <br>  
 
@@ -516,19 +516,23 @@ PDF 변환 과정에서 밑줄 친 텍스트가 사라지는 문제를 확인하
 <br>  
 
 
-## 📌 추가 개선이 필요한 사항
-현재 챗봇이 정상적으로 빈칸 문제를 생성할 수 있도록 개선되었지만, 보다 향상된 성능을 위해 다음과 같은 추가 개선이 필요합니다.
+## 📌 Additional improvements needed
+Although the chatbot has been improved to generate fill-in-the-blank questions correctly, the following additional improvements are needed for better performance
 <br>
-1. 챗봇이 영어로 응답하는 문제: 챗봇이 한국어로 된 질문을 받았음에도 일부 응답이 영어로 출력되는 현상이 발생합니다.
-2. 지시문, 지문, 선택지 중 일부가 누락되는 문제: JSON 변환 과정에서 특정 요소(지시문, 지문, 선택지)의 일부가 정상적으로 변환되지 않는 경우가 관찰되었습니다.
-3. 그림이나 그래프 포함 문제: PDF에 포함된 그림, 표, 그래프 등의 요소가 텍스트 변환 과정에서 누락되거나 왜곡되는 문제가 발생합니다.
+1. The issue where the chatbot responds in English even though it receives questions in Korean has occurred. Some responses are being output in English.
+2. An issue has been observed where certain elements (instructions, passage, options) are not properly converted during the JSON transformation process, causing some parts to be missing.
+3. An issue has occurred where elements such as images, tables, and graphs included in the PDF are either missing or distorted during the text conversion process.
 
 ---
  
-## 💭한 줄 회고
+## 💭A one-line retrospective.
 
-서주혁: OpenAI의 text-embedding-ada-002 모델을 활용하며, 최신 임베딩 기술의 성능과 한계를 체감한 프로젝트였다.
+Joohyeok Seo: It was a project where I experienced both the performance and limitations of the latest embedding technology using OpenAI's text-embedding-ada-002 model.
 <br>
-대성원: 데이터를 온전히 처리하고 원하는 결괏값을 도출해내기 위해서는 생각보다 복잡한 수작업이 필요할 수 있다는 것을 깨달았다.
+sungWon Dae: I realized that in order to fully process the data and derive the desired results, more complex manual work may be required than expected.
 <br>
-윤정연: 모델을 사용하면서 데이터 처리 과정이 얼마나 중요한지, 그리고 세심한 조정이 결과에 큰 영향을 미칠 수 있다는 것을 깨달았다.
+Jeongyeon Yoon: While using the model, I realized how important the data processing steps are and how fine adjustments can significantly impact the results.
+
+---
+
+For the Korean version of this documentation, please refer to [README_ko.md](README_ko.md).
