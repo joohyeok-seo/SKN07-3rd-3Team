@@ -1,21 +1,21 @@
 # SKN07-3rd-3Team
 
-# 📘 RAG 기반 영어 학습 챗봇
+# 📘 RAG-based English Learning Chatbot
  
-## 👥 팀 소개
+## 👥 Team Introduction
 | <img src="https://github.com/user-attachments/assets/b5a17c3c-8415-409b-ae90-0a931e677fc3" width="250" height="250"/> | <img src="https://github.com/user-attachments/assets/005f1a53-0700-420e-8c62-ae1555dd538b" width="250" height="260"/> | <img src="https://github.com/user-attachments/assets/3009a31a-d5ab-469a-bf39-39e6c7779efe" width="250" height="250"/>  | 
 |:----------:|:----------:|:----------:|
-| 영어 선생님 | 국어 선생님 | 사회 선생님 | 
-| 서주혁 | 대성원 | 윤정연 | 
+| English Teacher | Korean Teacher | Social Studies Teacher | 
+| Joohyeok Seo | Sungwon Dae | Jungyeon Yoon | 
 
 <br>
 
 ---
 
-## 📖 프로젝트 개요
-- 프로젝트 명:  RAG 기반 영어 학습 챗봇
-- 프로젝트 소개: AI 고졸 검정고시 학습 튜터는 검정고시를 준비하는 학습자를 위한 서비스입니다. 2018년부터 2024년까지 7년치의 고졸 검정고시 기출 문제를 기반으로 하며 사용자가 질문을 입력하면 AI가 정답과 해설을 제공합니다.
-  이 프로젝트는 **Retrieval-Augmented Generation (RAG)** 기술을 활용하여 영어 학습을 도와주는 **Streamlit 기반 챗봇**입니다. 사용자는 일반 질문을 입력하거나 FAISS 데이터베이스에서 랜덤으로 출제되는 문제를 풀 수 있습니다.
+## 📖 Project Overview
+- Project Name: RAG-based English Learning Chatbot
+- Project Description: The AI High School Equivalency Exam (GED) Learning Tutor is a service designed to assist learners preparing for the GED exam. It is based on seven years of past GED exam questions, from 2018 to 2024. Users can input their questions, and the AI provides correct answers along with explanations.
+  This project utilizes Retrieval-Augmented Generation (RAG) technology to facilitate English learning through a Streamlit-based chatbot. Users can either ask general questions or solve randomly generated questions from the FAISS database.
   
 - 프로젝트 필요성(배경):
   - 기존의 검정고시 학습 자료는 개별적인 질문에 대한 즉각적인 응답을 받을 수 있는 시스템이 부족합니다.
