@@ -32,23 +32,23 @@
 
 ---
 
-## 🚀 주요 기능 소개
+## 🚀 Key Features
 
-1. **일반 질문 응답**
-   - 사용자가 입력한 질문에 대해 OpenAI GPT-3.5가 응답을 생성합니다.
-2. **랜덤 문제 풀기**
-   - FAISS 데이터베이스에서 영어 문제를 랜덤으로 불러와 사용자가 문제를 풀 수 있도록 합니다.
-   - 선택지를 제공하며 정답을 확인할 수 있습니다.
-
----
-
-## 📂 프로젝트 구조
-
-<img src="https://github.com/user-attachments/assets/81339928-6c06-4bf1-8871-71630856ecac" alt="프로젝트 구조" width="800px">
+1. **General Question Response**
+   - Generates responses using OpenAI GPT-3.5 based on user-input questions.
+2. **Random Quiz Mode**
+   - Retrieves random English questions from the FAISS database, allowing users to practice.
+   - Provides multiple-choice options and allows users to check the correct answer.
 
 ---
 
-## 🔧 기술 스택
+## 📂 Project Structure
+
+<img src="https://github.com/user-attachments/assets/81339928-6c06-4bf1-8871-71630856ecac" alt="Project Structure" width="800px">
+
+---
+
+## 🔧 Technology Stack
 <p align="center">
   <img src="https://img.shields.io/badge/github-181717?style=flat-square&logo=github&logoColor=white" width="150" height="45" />
   <img src="https://img.shields.io/badge/git-F05032?style=flat-square&logo=git&logoColor=white" width="150" height="45" />
@@ -66,19 +66,19 @@
 
 ---
 
-## 📑 주요 프로시저
+## 📑 Main Procedures
 
-### ▶️ 1. 데이터 수집 _ 웹 크롤링 (한국교육과정평가원)
-- 메인 페이지에서 각 연도, 학력분류, 차수, 과목별 코드번호 추출
+### ▶️ 1. Data Collection – Web Crawling (Korea Institute for Curriculum and Evaluation, KICE)
+- Extracting Code Numbers for Each Year, Education Level, Session, and Subject from the Main Page
 ```python
 code_dict = {}
 tmp = 1
-while True:   # 모든 페이지 정보 가져오기
+while True:   # Retrieve All Page Information
     url = f'https://www.kice.re.kr/boardCnts/list.do?type=default&page={tmp}&selLimitYearYn=Y&selStartYear=2018&C06=&boardID=1500211&C05=&C04=&C03=&searchType=S&C02=&C01='
     re = requests.get(url)
     soup = BeautifulSoup(re.text, 'html.parser')
     
-    if soup.find('td').text.strip() == '등록된 게시물이 존재하지 않습니다.':
+    if soup.find('td').text.strip() == 'No Registered Posts Available.':
         break
         
     info = soup.find('tbody').find_all('tr')
@@ -89,14 +89,14 @@ while True:   # 모든 페이지 정보 가져오기
         edu = i.find_all('td')[2].text
         cnt = i.find_all('td')[3].text
         subject = i.find_all('td')[4].find('a')['title']
-        # 원하는 자료 정보 선택
-        if edu == '고졸학력' and subject == '영어':
+        # Select Desired Data Information
+        if edu == 'High School Equivalency Level' and subject == 'English':
             code_dict[code] = f'{year}_{edu}_{cnt}_{subject}'
     
     tmp += 1
 ```
 ![image](https://github.com/user-attachments/assets/be19cd7c-60ca-4ed9-a431-04b07a2ace09)
-- 추출된 코드번호로 세부 페이지 접속 후 PDF 파일 저장
+- Access Detailed Pages Using Extracted Code Numbers and Save PDF Files
 ```python
 for code in code_dict.keys():
     down_url = f'https://www.kice.re.kr/boardCnts/view.do?boardID=1500211&boardSeq={code}&lev=0&m=030305&searchType=S&statusYN=W&page=1&s=kice'
@@ -104,21 +104,21 @@ for code in code_dict.keys():
     down_soup = BeautifulSoup(down_re.text)
     tmp_url = down_soup.find(class_='fieldBox').find('a')['href']
     pdf_url = 'https://www.kice.re.kr' + tmp_url
-    file_path = f'./data/정답/{code_dict[code]}.pdf'
+    file_path = f'./data/Correct Answers/{code_dict[code]}.pdf'
     
     response = requests.get(pdf_url)
-    # 응답 상태 코드가 200(성공)인 경우에만 파일 저장
+    # Save Files Only When the Response Status Code is 200 (Success)
     if response.status_code == 200:
         with open(file_path, 'wb') as file:
-            file.write(response.content)  # PDF 파일 저장
+            file.write(response.content)  # Save PDF Files
 ```
 
 </br>
 
-### ▶️ 2. 데이터 추출
-### 2-1) 고등 영어 문제 추출
+### ▶️ 2. Data Extraction
+### 2-1) Extract High School English Questions
 
-- PDF에서 왼쪽/오른쪽 문항을 올바른 순서로 정리하여 추출
+- Extract Questions from PDF and Arrange Left/Right Columns in the Correct Order
 ```python
 def extract_text_from_pdf(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
@@ -127,14 +127,14 @@ def extract_text_from_pdf(pdf_path):
         for page in pdf.pages:
             width, height = page.width, page.height
 
-            # 왼쪽 문항 (페이지별 왼쪽 먼저)
+            # Left Column Questions (Process Left Side First for Each Page)
             left_bbox = (0, 0, width / 2, height)
             left_crop = page.within_bbox(left_bbox)
             left_text = left_crop.extract_text()
             if left_text:
-                combined_text_list.append(clean_text(left_text))  # 정리 후 추가
+                combined_text_list.append(clean_text(left_text))  # Organize and Append Data
 
-            # 오른쪽 문항 (페이지별 오른쪽 나중)
+            # Right Column Questions (Process Right Side After Each Page)
             right_bbox = (width / 2, 0, width, height)
             right_crop = page.within_bbox(right_bbox)
             right_text = right_crop.extract_text()
@@ -142,7 +142,7 @@ def extract_text_from_pdf(pdf_path):
                 combined_text_list.append(clean_text(right_text))
 ```
 
-- OCR 이미지 PDF 처리 (페이지별 왼쪽 → 오른쪽)
+- OCR Processing for Image-based PDFs (Left to Right per Page)
 ```python
 def extract_text_from_image_pdf(pdf_path):
     images = convert_from_path(pdf_path, dpi=300)
@@ -151,12 +151,12 @@ def extract_text_from_image_pdf(pdf_path):
     for img in images:
         width, height = img.size
 
-        # 왼쪽 문항 OCR
+        # Left Column Question OCR
         left_crop = img.crop((0, 0, width // 2, height))
         left_text = pytesseract.image_to_string(left_crop, lang="eng+kor", config="--psm 6")
         combined_text_list.append(clean_text(left_text))
 
-        # 오른쪽 문항 OCR
+        # Right Column Question OCR
         right_crop = img.crop((width // 2, 0, width, height))
         right_text = pytesseract.image_to_string(right_crop, lang="eng+kor", config="--psm 6")
         combined_text_list.append(clean_text(right_text))
@@ -164,41 +164,41 @@ def extract_text_from_image_pdf(pdf_path):
     return "\n".join(combined_text_list)
 ```
 
-### 2-2) 고등 영어 정답 추출
-- PDF에서 영어 정답 추출 (OCR 포함)
+### 2-2) Extract High School English Answers
+- Extract English Answers from PDF (Including OCR Processing)
 ```python
 def extract_english_answers_from_pdf(pdf_path):
     answers = {}
 
-    # 1️⃣ PDF에서 직접 텍스트 추출
+    # 1️⃣ Extract Text Directly from PDF
     with pdfplumber.open(pdf_path) as pdf:
         text = "\n".join([page.extract_text() for page in pdf.pages if page.extract_text()])
 
-    # 2️⃣ OCR 적용 (텍스트가 비어 있으면 OCR 사용)
+    # 2️⃣ Apply OCR (Use OCR if Text is Empty)
     if not text.strip():
         text = extract_text_from_image_pdf(pdf_path)
 
-    # 3️⃣ OCR로 추출한 원본 텍스트 출력 (디버깅 목적)
+    # 3️⃣ Output Raw Text Extracted via OCR (For Debugging Purposes)
     print("\n📝 OCR EXTRACTED TEXT FROM PDF:", pdf_path)
-    print(text[:1000])  # 처음 1000자만 출력
+    print(text[:1000])  # Output First 1,000 Characters Only
 
-    # 4️⃣ "영어 정답표" 또는 "3교시 영어" 포함된 부분 찾기
-    match = re.search(r"(?:영어 정답표|3교시 영어|영어)([\s\S]+?)(?=\n\w+ 정답표|\Z)", text)
+    # 4️⃣ Find Sections Containing "English Answer Table" or "Session 3: English"
+    match = re.search(r"(?:English Answer Table|Session 3: English|English)([\s\S]+?)(?=\n\w+ Answer Table|\Z)", text)
     if match:
         english_answers_section = match.group(1).strip()
     else:
-        print(f"⚠ 영어 정답을 찾을 수 없음: {pdf_path}")
+        print(f"⚠ English Answers Not Found: {pdf_path}")
         return None
 
-    # 5️⃣ 정답 패턴 추출 (디버깅용 출력 추가)
+    # 5️⃣ Extract Answer Patterns (Include Debugging Output)
     extracted_text = convert_korean_numbers(english_answers_section)
     print("\n🔍 EXTRACTED ENGLISH ANSWERS SECTION:")
-    print(extracted_text[:500])  # 처음 500자만 출력
+    print(extracted_text[:500])  # Output First 500 Characters Only
 
-    # 6️⃣ 문항번호 & 정답 추출
+    # 6️⃣ Extract Question Numbers & Answers
     answer_pattern = re.findall(r"(\d+)\s+([①②③④1-4])", extracted_text)
 
-    # 🔥 디버깅: 추출된 정답 출력
+    # 🔥 Debugging: Output Extracted Answers
     print("\n🔎 Extracted Answers Dictionary:", answer_pattern)
 
     for q_num, ans in answer_pattern:
@@ -207,115 +207,115 @@ def extract_english_answers_from_pdf(pdf_path):
     return answers
 ```
 
-### 2-3) 고등 영어 문제, 정답 json파일 합치기
-- 파일명 정리 (정답 파일명과 문제 파일명 일치하도록 변환)
+### 2-3) Merge High School English Questions and Answers into a JSON File
+- Rename Files to Match Question and Answer Filenames
 ```python
 def clean_filename(filename):
-    return filename.replace("_고등_정답.pdf", "_고등_영어.pdf")  # 정답 파일명을 문제 파일명과 맞춤
+    return filename.replace("_High_School_Answers.pdf", "_High_School_English.pdf")  # Match Answer Filenames with Question Filenames
 ```
 
-- 변환된 정답 데이터 키 값 수정
+- Modify Key Values in the Converted Answer Data
 ```python
 answers_data_fixed = {clean_filename(k): v for k, v in answers_data.items()}\
 ```
 
-- 문제와 정답 매칭
+- Match Questions with Answers
 ```python
 merged_data = {}
 
 for file_name, question_content in questions_data.items():
     matched_file = clean_filename(file_name)
-    if matched_file in answers_data_fixed:  # 정답이 있는 경우만 추가
+    if matched_file in answers_data_fixed:  # Add Only If an Answer Exists
         merged_data[file_name] = {
             "questions": question_content,
             "answers": answers_data_fixed[matched_file]
         }
     else:
-        print(f"⚠ 정답이 없는 문제 파일: {file_name}")
+        print(f"⚠ Question Files Without Answers: {file_name}")
 ```
 
 </br>
 
-### ▶️ 3. 임베딩
-- OpenAI의 "text-embedding-ada-002" 모델를 사용해 질문을 벡터로 변환
+### ▶️ 3. Embedding
+- OpenAI의 "text-embedding-ada-002" Convert Questions into Vectors Using a Model
 ```python
 def get_embedding(text):
     response = openai.embeddings.create(
         input=text,
         model="text-embedding-ada-002"
     )
-    return response.data[0].embedding  # 최신 API 방식 적용
+    return response.data[0].embedding  # Apply the Latest API Method
 
-# 모든 질문을 임베딩 변환
+# Convert All Questions into Embeddings
 question_embeddings = [get_embedding(q) for q in questions]
 ```
 
-- FAISS 데이터베이스 생성
+- Create FAISS Database
 ```python
-embedding_dim = 1536  # 벡터 차원 설정
-index = faiss.IndexFlatL2(embedding_dim)  # FAISS 인덱스 생성
-question_vectors = np.array(question_embeddings).astype("float32")  # 임베딩 데이터를 numpy 배열로 변환
+embedding_dim = 1536  # Set Vector Dimensions
+index = faiss.IndexFlatL2(embedding_dim)  # Create FAISS Index
+question_vectors = np.array(question_embeddings).astype("float32")  # Convert Embedding Data to NumPy Array
 index.add(question_vectors)  # FAISS 데이터베이스에 추가
 ```
 
-- FAISS를 이용한 유사 질문 검색
+- Search for Similar Questions Using FAISS
 ```python
 def search_similar_questions(query, top_k=3):
-    # 입력 질문을 벡터로 변환
+    # Convert Input Question into a Vector
     query_vector = np.array(get_embedding(query)).astype("float32").reshape(1, -1)
 
-    # 가장 가까운 질문 검색
+    # Search for the Closest Question
     distances, indices = index.search(query_vector, top_k)
 
-    # 결과 출력
-    print("\n[가장 유사한 질문들]")
+    # Display Results
+    print("\n[Most Similar Questions]")
     for i in range(top_k):
         idx = indices[0][i]
         print(f"{i+1}. {questions[idx]} (거리: {distances[0][i]:.4f})")
 ```
 
-- FAISS 인덱스 저장
+- Save FAISS Index
 ```python
 faiss.write_index(index, "faiss_index.bin")
 ```
 
 </br>
 
-### ▶️ 4. RAG로 성능 향상
-- OpenAI 임베딩
+### ▶️ 4. Improve Performance with RAG (Retrieval-Augmented Generation)
+- OpenAI Embedding
 ```python
 client = openai.OpenAI()
 
-# 임베딩 변환 함수
+# Embedding Conversion Function
 def get_embedding(text):
     response = client.embeddings.create(
         input=text,
         model="text-embedding-ada-002"
     )
-    return response.data[0].embedding  # 최신 API 방식 적용
+    return response.data[0].embedding  # Apply Latest API Method
 ```
-- FAISS에서 유사한 질문 검색
+- Search for Similar Questions in FAISS
 ```python
 def search_similar_questions(query, top_k=3):
     query_vector = np.array(get_embedding(query)).astype("float32").reshape(1, -1)
     distances, indices = index.search(query_vector, top_k)
 
-    # 유사 질문 리스트 생성
+    # Generate List of Similar Questions
     similar_questions = [questions[idx] for idx in indices[0]]
 
-    print("\n[가장 유사한 질문들]")
+    print("\n[Most Similar Questions]")
     for i, question in enumerate(similar_questions):
-        print(f"{i+1}. {question} (유사도 거리: {distances[0][i]:.4f})")
+        print(f"{i+1}. {question} (Similarity Distance: {distances[0][i]:.4f})")
 
     return similar_questions
 ```
-- GPT-4와 연결하여 최종 RAG 응답 생성
+- Connect to GPT-4 for Final RAG Response Generation
 ```python
 def generate_response(query):
-    similar_questions = search_similar_questions(query, top_k=3)     # 유사한 질문 찾기
-    context = "\n".join(similar_questions)     # 검색된 질문을 프롬프트 컨텍스트로 활용
+    similar_questions = search_similar_questions(query, top_k=3)     # Find Similar Questions
+    context = "\n".join(similar_questions)     # Use Retrieved Questions as Prompt Context
 
-    # GPT-4 프롬프트 설정
+    # Setting up GPT-4 Prompt
     prompt = f"""
     You are an AI assistant. Use the following context to answer the question.
 
@@ -327,7 +327,7 @@ def generate_response(query):
     Answer:
     """
 
-    # GPT-4 API 호출 (최신 방식)
+    # GPT-4 API Call (Latest Method)
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[{"role": "system", "content": "You are a helpful assistant."},
@@ -339,8 +339,8 @@ def generate_response(query):
 
 </br>
 
-### ▶️ 5. Streamlit 구현
-- RAG 관련 함수 로드
+### ▶️ 5. Streamlit Implementation
+- Loading RAG-Related Functions
 ```python
 def load_rag_functions():
     with open(rag_application_path, "r", encoding="utf-8") as f:
@@ -354,7 +354,7 @@ def load_rag_functions():
 load_rag_functions()
 ```
 
-- FAISS 데이터베이스 및 질문 데이터 로드
+- Load FAISS database and question data
 ```python
 faiss_index_path = "faiss_index.bin"  # FAISS 인덱스 경로
 index = faiss.read_index(faiss_index_path)  # FAISS 인덱스 읽기
