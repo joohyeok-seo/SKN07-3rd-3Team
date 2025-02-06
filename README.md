@@ -527,11 +527,11 @@ Although the chatbot has been improved to generate fill-in-the-blank questions c
  
 ## 💭A one-line retrospective.
 
-Joohyeok Seo: It was a project where I experienced both the performance and limitations of the latest embedding technology using OpenAI's text-embedding-ada-002 model.
+**Joohyeok Seo**: It was a project where I experienced both the performance and limitations of the latest embedding technology using OpenAI's text-embedding-ada-002 model.
 <br>
-sungWon Dae: I realized that in order to fully process the data and derive the desired results, more complex manual work may be required than expected.
+**Sungwon Dae**: I realized that in order to fully process the data and derive the desired results, more complex manual work may be required than expected.
 <br>
-Jeongyeon Yoon: While using the model, I realized how important the data processing steps are and how fine adjustments can significantly impact the results.
+**Jeongyeon Yoon**: While using the model, I realized how important the data processing steps are and how fine adjustments can significantly impact the results.
 
 ---
 
